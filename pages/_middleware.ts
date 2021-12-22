@@ -1,22 +1,17 @@
 import type { NextFetchEvent, NextRequest } from 'next/server';
 
-export default function middleware(req: NextRequest, event: NextFetchEvent) {
+// Block GB, prefer US
+const BLOCKED_COUNTRY = 'US';
 
-    if (req.nextUrl.pathname === '/responses/send-response') {
-        const { readable, writable } = new TransformStream();
-    
-        event.waitUntil(
-          (async () => {
-            const writer = writable.getWriter();
-            const encoder = new TextEncoder();
-            writer.write(encoder.encode('Hello, world! Streamed!'));
-            writer.write(encoder.encode('response'));
-            writer.close();
-          })(),
-        );
-    
-        return new Response(readable);
-      }
+export function middleware(req: NextRequest) {
+  const country = req.geo.country;
 
+  // If the request is from the blocked country,
+  // send back a response with a status code
+  if (country === BLOCKED_COUNTRY) {
+    return new Response('Blocked for legal reasons', { status: 451 });
+  }
 
+  // Otherwise, send a response with the country
+  return new Response(`Greetings from ${country}, where you are not blocked.`);
 }
