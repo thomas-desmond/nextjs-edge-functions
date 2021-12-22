@@ -4,7 +4,11 @@ import type { NextFetchEvent, NextRequest } from 'next/server';
 const BLOCKED_COUNTRY = 'US';
 
 export function middleware(req: NextRequest) {
-  const country = req.geo.country;
+
+  let country = 'CA';
+  if(req.geo) {
+    country = req.geo.country || 'US';
+  }
 
   // If the request is from the blocked country,
   // send back a response with a status code
